@@ -49,8 +49,13 @@ func main() {
 	lambda.StartWithContext(ctx, func(MyEvent, MyEvent) error { return nil }) // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
 
 	// not lambda func
-	Start(func() {})                 // OK
-	StartWithContext(ctx, func() {}) // OK
+	Start("gopher")                                                    // OK
+	Start(func() string { return "gopher" })                           // OK
+	Start(func(MyEvent, MyEvent) error { return nil })                 // OK
+	Start(MyHandle)                                                    // OK
+	StartWithContext(ctx, "gopher")                                    // OK
+	StartWithContext(ctx, func() string { return "gopher" })           // OK
+	StartWithContext(ctx, func(MyEvent, MyEvent) error { return nil }) // OK
 }
 
 func MyHandle() func(MyEvent, MyEvent) error        { return nil }

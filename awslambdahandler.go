@@ -11,7 +11,8 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-const doc = `awslambdahandler checks whether aws lambda handler signature is valid
+const (
+	doc = `awslambdahandler checks whether aws lambda handler signature is valid
 
 Valid AWS Lambda signatures are as follows, 
 
@@ -27,6 +28,9 @@ Valid AWS Lambda signatures are as follows,
 
 Where "TIn" and "TOut" are types compatible with the "encoding/json" standard library.
 `
+
+	awsLambdaGoPath = "github.com/aws/aws-lambda-go/lambda"
+)
 
 var Analyzer = &analysis.Analyzer{
 	Name: "awslambdahandler",
@@ -44,12 +48,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		(*ast.CallExpr)(nil),
 	}
 
-	start := analysisutil.TypeOf(pass, "github.com/aws/aws-lambda-go/lambda", "Start")
-	startWithCtx := analysisutil.TypeOf(pass, "github.com/aws/aws-lambda-go/lambda", "StartWithContext")
-
-	errType := types.Universe.Lookup("error").Type()
-	ctxType := analysisutil.TypeOf(pass, "context", "Context")
-
 	inspect.Preorder(nodeFilter, func(n ast.Node) {
 		call := n.(*ast.CallExpr)
 		fn := typeutil.StaticCallee(pass.TypesInfo, call)
@@ -64,9 +62,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		}
 
 		argIdx := -1
-		if types.Identical(fn.Type(), start) {
+		if identical(fn, awsLambdaGoPath, "Start") {
 			argIdx = 0
-		} else if types.Identical(fn.Type(), startWithCtx) {
+		} else if identical(fn, awsLambdaGoPath, "StartWithContext") {
 			argIdx = 1
 		}
 		if argIdx < 0 {
@@ -86,7 +84,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			case 0, 1:
 			case 2:
 				// if there are two arguments, the first argument must satisfy the "context.Context" interface
-				if !types.Identical(vars.At(0).Type(), ctxType) {
+				typ, ok := vars.At(0).Type().(*types.Named)
+				if !ok || !identical(typ.Obj(), "context", "Context") {
 					valid = false
 				}
 			default:
@@ -100,12 +99,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			case 0:
 			case 1:
 				// if there is one return value it must be an error
-				if !types.Identical(vars.At(0).Type(), errType) {
+				if !isErrorType(vars.At(0).Type()) {
 					valid = false
 				}
 			case 2:
 				// if there are two return values, the second argument must be an error
-				if !types.Identical(vars.At(1).Type(), errType) {
+				if !isErrorType(vars.At(1).Type()) {
 					valid = false
 				}
 			default:
@@ -130,4 +129,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	})
 
 	return nil, nil
+}
+
+func identical(obj types.Object, path, name string) bool {
+	return analysisutil.RemoveVendor(obj.Pkg().Path()) == path && obj.Name() == name
+}
+
+func isErrorType(t types.Type) bool {
+	return types.Identical(t, types.Universe.Lookup("error").Type())
 }
