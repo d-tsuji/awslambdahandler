@@ -1,5 +1,13 @@
 # awslambdahandler
 
+[![Test Status](https://github.com/d-tsuji/awslambdahandler/workflows/test/badge.svg?branch=master)][actions]
+[![Go Report Card](https://goreportcard.com/badge/github.com/d-tsuji/awslambdahandler)][go report card]
+[![Apache-2.0 license](https://img.shields.io/badge/license-Apache2.0-blue.svg)][license]
+
+[actions]: https://github.com/d-tsuji/awslambdahandler/actions?workflow=test
+[go report card]: https://goreportcard.com/report/github.com/d-tsuji/awslambdahandler
+[license]: https://github.com/d-tsuji/awslambdahandler/blob/master/LICENSE
+
 `awslambdahandler` checks whether aws lambda handler signature is valid.
 
 Valid AWS Lambda signatures are as follows
