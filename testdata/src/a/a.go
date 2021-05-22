@@ -27,11 +27,10 @@ func main() {
 	lambda.Start(func(context.Context, MyEvent) (MyResponse, error) { return MyResponse{}, nil }) // OK
 
 	// invalid handler signature
-	lambda.Start("gopher")                                      // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
-	lambda.Start(func() string { return "gopher" })             // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
-	lambda.Start(func(MyEvent, MyEvent) error { return nil })   // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
-	lambda.Start(MyHandle)                                      // want `lambda handler of "MyHandle" is invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
-	lambda.Start(func(MyContext, MyEvent) error { return nil }) // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
+	lambda.Start("gopher")                                    // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
+	lambda.Start(func() string { return "gopher" })           // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
+	lambda.Start(func(MyEvent, MyEvent) error { return nil }) // want `invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
+	lambda.Start(MyHandle)                                    // want `lambda handler of "MyHandle" is invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`
 
 	// valid handler signature
 	ctx := context.Background()
@@ -62,7 +61,3 @@ func main() {
 func MyHandle() func(MyEvent, MyEvent) error        { return nil }
 func Start(interface{})                             {}
 func StartWithContext(context.Context, interface{}) {}
-
-type MyContext struct {
-	context.Context
-}

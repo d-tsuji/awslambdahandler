@@ -84,8 +84,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			case 0, 1:
 			case 2:
 				// if there are two arguments, the first argument must satisfy the "context.Context" interface
-				typ, ok := vars.At(0).Type().(*types.Named)
-				if !ok || !identical(typ.Obj(), "context", "Context") {
+				if !isImplementContext(pass, vars.At(0).Type()) {
 					valid = false
 				}
 			default:
@@ -137,4 +136,16 @@ func identical(obj types.Object, path, name string) bool {
 
 func isErrorType(t types.Type) bool {
 	return types.Identical(t, types.Universe.Lookup("error").Type())
+}
+
+func isImplementContext(pass *analysis.Pass, t types.Type) bool {
+	// TODO(d-tsuji): If the code does not import the context package, it will be nil.
+	// 	Therefore, it is possible that context.Context is implemented,
+	// 	but a false positive will result in an error.
+	ctxType := analysisutil.TypeOf(pass, "context", "Context")
+	ctxIntf, ok := ctxType.Underlying().(*types.Interface)
+	if !ok {
+		return false
+	}
+	return types.Implements(t, ctxIntf)
 }
