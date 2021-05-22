@@ -84,7 +84,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			case 0, 1:
 			case 2:
 				// if there are two arguments, the first argument must satisfy the "context.Context" interface
-				// TODO(d-tsuji): false positives occur when the type satisfies "context.Context" interface, not "context.Context".
 				typ, ok := vars.At(0).Type().(*types.Named)
 				if !ok || !identical(typ.Obj(), "context", "Context") {
 					valid = false
