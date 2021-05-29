@@ -73,8 +73,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 		// handler must be a function
 		t := pass.TypesInfo.Types[call.Args[argIdx]].Type
-		s, ok := t.Underlying().(*types.Signature)
-		if ok {
+		if s, ok := t.Underlying().(*types.Signature); ok {
 			valid := true
 
 			// validate handler params
@@ -124,7 +123,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		} else {
 			pass.Reportf(call.Lparen, `lambda handler of "%s" is invalid lambda signature, see https://pkg.go.dev/github.com/aws/aws-lambda-go/lambda#Start`, name)
 		}
-
 	})
 
 	return nil, nil
